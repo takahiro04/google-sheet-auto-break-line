@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      /* Giao diện hiện đại, sạch sẽ */
+      body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        padding: 20px;
+        background-color: #f9f9f9;
+        color: #333;
+        font-size: 14px;
+      }
+      
+      h3 {
+        margin: 0 0 20px 0;
+        color: #1a73e8;
+        font-size: 18px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+      }
+
+      .label-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+        color: #555;
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        accent-color: #1a73e8;
+        cursor: pointer;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      input[type="text"]:focus {
+        border-color: #1a73e8;
+        outline: none;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: #777;
+        margin-top: 8px;
+        font-style: italic;
+      }
+
+      .highlight {
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 25px;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-cancel {
+        background: none;
+        color: #666;
+      }
+      .btn-cancel:hover {
+        background: #eee;
+      }
+
+      .btn-submit {
+        background: #1a73e8;
+        color: white;
+        box-shadow: 0 2px 5px rgba(26, 115, 232, 0.3);
+      }
+      .btn-submit:hover {
+        background: #1557b0;
+        transform: translateY(-1px);
+      }
+      .btn-submit:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      #status {
+        margin-top: 15px;
+        font-size: 13px;
+        text-align: center;
+        min-height: 20px;
+      }
+      .success { color: #0f9d58; font-weight: bold; }
+      .error { color: #d93025; font-weight: bold; }
+
+    </style>
+  </head>
+  <body>
+    <h3>Cấu Hình Xuống Dòng</h3>
+    
+    <div class="card">
+      <span class="label-title">Mẫu ký tự có sẵn:</span>
+      <div class="checkbox-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="chk_circle" checked>
+          <span>Số khoanh tròn (①, ②, ⑳...)</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="chk_brackets" checked>
+          <span>Dấu ngoặc đậm (【, 】)</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="label-title">Ký tự tùy chỉnh:</span>
+      <input type="text" id="txt_custom" placeholder="Ví dụ: *, -, Lưu ý...">
+      <div class="hint">
+        Dùng dấu phẩy <span class="highlight">,</span> để ngăn cách nhiều từ khóa.
+      </div>
+    </div>
+
+    <div id="status"></div>
+
+    <div class="footer">
+      <button class="btn-cancel" onclick="google.script.host.close()">Đóng</button>
+      <button class="btn-submit" id="btnRun" onclick="runProcess()">BẮT ĐẦU XỬ LÝ</button>
+    </div>
+
+    <script>
+      function runProcess() {
+        var btn = document.getElementById('btnRun');
+        var status = document.getElementById('status');
+        
+        btn.disabled = true;
+        btn.textContent = "Đang chạy...";
+        status.innerHTML = "";
+
+        var settings = {
+          useCircleNum: document.getElementById('chk_circle').checked,
+          useBrackets: document.getElementById('chk_brackets').checked,
+          customChars: document.getElementById('txt_custom').value
+        };
+
+        google.script.run
+          .withSuccessHandler(function(result) {
+            btn.disabled = false;
+            btn.textContent = "BẮT ĐẦU XỬ LÝ";
+            
+            if (result.success) {
+              if (result.count > 0) {
+                status.innerHTML = "<span class='success'>✅ Hoàn tất! Đã sửa " + result.count + " ô.</span>";
+              } else {
+                status.innerHTML = "<span style='color:#fbbc04'>ℹ️ Không có thay đổi nào.</span>";
+              }
+            } else {
+              status.innerHTML = "<span class='error'>" + result.message + "</span>";
+            }
+          })
+          .withFailureHandler(function(error) {
+            btn.disabled = false;
+            btn.textContent = "BẮT ĐẦU XỬ LÝ";
+            status.innerHTML = "<span class='error'>❌ Lỗi: " + error.message + "</span>";
+          })
+          .processFormat(settings);
+      }
+    </script>
+  </body>
+</html>
